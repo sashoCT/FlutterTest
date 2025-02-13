@@ -3,8 +3,8 @@
         android:label="myflutterapp"
         android:name=".MyApplication"
         android:icon="@mipmap/ic_launcher">
-        <meta-data android:name="CLEVERTAP_ACCOUNT_ID" android:value="466-779-676Z"/>
-        <meta-data android:name="CLEVERTAP_TOKEN" android:value="caa-664"/>
+        <meta-data android:name="CLEVERTAP_ACCOUNT_ID" android:value="TEST-6K9-Z57-KK7Z"/>
+        <meta-data android:name="CLEVERTAP_TOKEN" android:value="TEST-a51-c36"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -38,6 +38,10 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Required to allow the app to send events and user profile information -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Recommended so that CleverTap knows when to attempt a network call -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

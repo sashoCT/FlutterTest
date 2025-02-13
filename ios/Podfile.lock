@@ -1,25 +1,32 @@
 PODS:
   - CleverTap-Geofence-SDK (1.0.6):
     - CleverTap-iOS-SDK (>= 3.9)
-  - CleverTap-iOS-SDK (7.0.1):
+  - CleverTap-iOS-SDK (7.0.3):
     - SDWebImage (~> 5.11)
-  - clevertap_plugin (2.5.0):
-    - CleverTap-iOS-SDK (= 7.0.1)
+  - clevertap_plugin (3.0.0):
+    - CleverTap-iOS-SDK (= 7.0.3)
     - Flutter
+  - CTNotificationService (0.1.7)
   - Flutter (1.0.0)
+  - permission_handler_apple (9.3.0):
+    - Flutter
   - SDWebImage (5.20.0):
     - SDWebImage/Core (= 5.20.0)
   - SDWebImage/Core (5.20.0)
 
 DEPENDENCIES:
   - CleverTap-Geofence-SDK
+  - CleverTap-iOS-SDK (~> 7.0.3)
   - clevertap_plugin (from `.symlinks/plugins/clevertap_plugin/ios`)
+  - CTNotificationService
   - Flutter (from `Flutter`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
 
 SPEC REPOS:
   trunk:
     - CleverTap-Geofence-SDK
     - CleverTap-iOS-SDK
+    - CTNotificationService
     - SDWebImage
 
 EXTERNAL SOURCES:
@@ -27,14 +34,18 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/clevertap_plugin/ios"
   Flutter:
     :path: Flutter
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
   CleverTap-Geofence-SDK: 980ab1d94b0f7e45090fd60f0e3dce24553d419c
-  CleverTap-iOS-SDK: 7554c66e94450822e03523c288712ebb1d1b70e8
-  clevertap_plugin: d94e09bdbdd44925c0c821c2a9a598a4703df158
+  CleverTap-iOS-SDK: 04730793327667e70602d131d34954f1fee86bc6
+  clevertap_plugin: 2f1c9285d5e2e47e606f630095a16104495adb61
+  CTNotificationService: 3eceea27cf0e28a2e14267bb706013363eb620c6
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
   SDWebImage: 73c6079366fea25fa4bb9640d5fb58f0893facd8
 
-PODFILE CHECKSUM: fdeea8414a617806ff5842dde9a5359437e171d9
+PODFILE CHECKSUM: 164c03788e5ea530e31d29ccf59711f14d9ab783
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

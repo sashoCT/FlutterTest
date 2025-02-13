@@ -37,6 +37,15 @@ target 'Runner' do
   end
 end
 
+target 'NotificationService' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for ct_integration
+  pod 'CleverTap-iOS-SDK', '~> 7.0.3'
+  pod 'CTNotificationService'
+end
+
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
