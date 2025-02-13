@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import CleverTapSDK
 import clevertap_plugin
+import CleverTapGeofence
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -12,8 +13,11 @@ import clevertap_plugin
     GeneratedPluginRegistrant.register(with: self)
     UNUserNotificationCenter.current().delegate = self
 
-    CleverTap.autoIntegrate() // integrate CleverTap SDK using the autoIntegrate option
+    // CleverTap.autoIntegrate() // integrate CleverTap SDK using the autoIntegrate option
     CleverTapPlugin.sharedInstance()?.applicationDidLaunch(options: launchOptions)
+    CleverTapGeofence.monitor.start(didFinishLaunchingWithOptions: launchOptions)
+    let locationManager = CLLocationManager()
+        locationManager.requestAlwaysAuthorization()
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -24,6 +28,7 @@ import clevertap_plugin
     
     override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         NSLog("%@: registered for remote notifications: %@", self.description, deviceToken.description)
+        CleverTap.sharedInstance()?.setPushToken(deviceToken as Data)
     }
     
     override func userNotificationCenter(_ center: UNUserNotificationCenter,
@@ -31,6 +36,8 @@ import clevertap_plugin
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         
         NSLog("%@: did receive notification response: %@", self.description, response.notification.request.content.userInfo)
+        CleverTap.sharedInstance()?.handleNotification(withData: response.notification.request.content.userInfo)
+
         completionHandler()
     }
     
@@ -39,7 +46,8 @@ import clevertap_plugin
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         
         NSLog("%@: will present notification: %@", self.description, notification.request.content.userInfo)
-        CleverTap.sharedInstance()?.recordNotificationViewedEvent(withData: notification.request.content.userInfo)
+        CleverTap.sharedInstance()?.handleNotification(withData: notification.request.content.userInfo, openDeepLinksInForeground: false)
+
         completionHandler([.badge, .sound, .alert])
     }
     

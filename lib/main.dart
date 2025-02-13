@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:clevertap_plugin/clevertap_plugin.dart';
+import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(const MyApp());
@@ -56,15 +58,139 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  static const platform = MethodChannel('geochannel');
+  String? ctId;
+  PermissionStatus? alwaysLocationPermissionStatus;
+  PermissionStatus? whenInUseLocationPermissionStatus;
 
+  int _counter = 0;
+  late CleverTapPlugin _clevertapPlugin;
   @override
   void initState() {
     print("initState");
     super.initState();
+    _init();
+    _incrementCounter();
     CleverTapPlugin.setDebugLevel(3);
+    activateCleverTapFlutterPluginHandlers();
     CleverTapPlugin.registerForPush();
     //var initialUrl = CleverTapPlugin.getInitialUrl();
+  }
+
+  void activateCleverTapFlutterPluginHandlers() {
+    _clevertapPlugin = CleverTapPlugin();
+    _clevertapPlugin.setCleverTapPushClickedPayloadReceivedHandler(
+        pushClickedPayloadReceived);
+  }
+
+  void pushClickedPayloadReceived(Map<String, dynamic> notificationPayload) {
+    print("pushClickedPayloadReceived called");
+    print("on Push Click Payload = $notificationPayload");
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    setState(() {
+      _init();
+    });
+  }
+
+  void _init() {
+    _fetchCTId();
+    _fetchLocationPermissionStatuses();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: ListView(
+        children: [
+          if (ctId != null)
+            ListTile(
+                title: const Text('CleverTap Id'),
+                subtitle: Text(ctId!),
+                trailing: IconButton(
+                    icon: const Icon(Icons.copy),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: ctId!));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('Copied CleverTap Id to clipboard')));
+                    })),
+          if (whenInUseLocationPermissionStatus != null)
+            ListTile(
+                title: const Text('1. When In Use Location Permission Status'),
+                subtitle: Text(whenInUseLocationPermissionStatus.toString()),
+                trailing: whenInUseLocationPermissionStatus!.isGranted
+                    ? null
+                    : OutlinedButton(
+                        onPressed: () => Permission.location.request(),
+                        child: const Text('Request'))),
+          if (whenInUseLocationPermissionStatus?.isGranted == true &&
+              alwaysLocationPermissionStatus != null)
+            ListTile(
+                title: const Text('2. Always Location Permission Status'),
+                subtitle: Text(alwaysLocationPermissionStatus.toString()),
+                trailing: alwaysLocationPermissionStatus!.isGranted
+                    ? null
+                    : whenInUseLocationPermissionStatus?.isGranted == true
+                        ? OutlinedButton(
+                            onPressed: () =>
+                                Permission.locationAlways.request(),
+                            child: const Text('Request'))
+                        : const Text('Grant When In Use First')),
+          if (alwaysLocationPermissionStatus?.isGranted == true)
+            Card(
+                child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Text('3. CleverTap GeofenceSDK',
+                      style: Theme.of(context).textTheme.titleLarge),
+                  OutlinedButton(
+                      onPressed: _initGeofenceSDK,
+                      child: const Text('Init & Trigger Location')),
+                  OutlinedButton(
+                      onPressed: _triggerLocation,
+                      child: const Text('Trigger Location')),
+                  OutlinedButton(
+                      onPressed: _deactivateGeofenceSDK,
+                      child: const Text('Deactivate')),
+                ],
+              ),
+            )),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _fetchCTId() async {
+    final newId = await CleverTapPlugin.getCleverTapID();
+    setState(() {
+      ctId = newId;
+    });
+  }
+
+  Future<void> _fetchLocationPermissionStatuses() async {
+    final whenInUseStatus = await Permission.location.status;
+    final alwaysStatus = await Permission.locationAlways.status;
+
+    setState(() {
+      whenInUseLocationPermissionStatus = whenInUseStatus;
+      alwaysLocationPermissionStatus = alwaysStatus;
+    });
+  }
+
+  Future<void> _initGeofenceSDK() async {
+    await platform.invokeMethod('initGeofenceSDK');
+  }
+
+  Future<void> _deactivateGeofenceSDK() async {
+    await platform.invokeMethod('deactivateGeofenceSDK');
+  }
+
+  Future<void> _triggerLocation() async {
+    await platform.invokeMethod('triggerLocation');
   }
 
   void _incrementCounter() {
@@ -80,58 +206,58 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
+  // @override
+  // Widget build(BuildContext context) {
+  //   // This method is rerun every time setState is called, for instance as done
+  //   // by the _incrementCounter method above.
+  //   //
+  //   // The Flutter framework has been optimized to make rerunning build methods
+  //   // fast, so that you can just rebuild anything that needs updating rather
+  //   // than having to individually change instances of widgets.
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //       // TRY THIS: Try changing the color here to a specific color (to
+  //       // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+  //       // change color while the other colors stay the same.
+  //       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+  //       // Here we take the value from the MyHomePage object that was created by
+  //       // the App.build method, and use it to set our appbar title.
+  //       title: Text(widget.title),
+  //     ),
+  //     body: Center(
+  //       // Center is a layout widget. It takes a single child and positions it
+  //       // in the middle of the parent.
+  //       child: Column(
+  //         // Column is also a layout widget. It takes a list of children and
+  //         // arranges them vertically. By default, it sizes itself to fit its
+  //         // children horizontally, and tries to be as tall as its parent.
+  //         //
+  //         // Column has various properties to control how it sizes itself and
+  //         // how it positions its children. Here we use mainAxisAlignment to
+  //         // center the children vertically; the main axis here is the vertical
+  //         // axis because Columns are vertical (the cross axis would be
+  //         // horizontal).
+  //         //
+  //         // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+  //         // action in the IDE, or press "p" in the console), to see the
+  //         // wireframe for each widget.
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: <Widget>[
+  //           const Text(
+  //             'You have pushed the button this many times:',
+  //           ),
+  //           Text(
+  //             '$_counter',
+  //             style: Theme.of(context).textTheme.headlineMedium,
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //     floatingActionButton: FloatingActionButton(
+  //       onPressed: _incrementCounter,
+  //       tooltip: 'Increment',
+  //       child: const Icon(Icons.add),
+  //     ), // This trailing comma makes auto-formatting nicer for build methods.
+  //   );
+  // }
 }
