@@ -3,6 +3,8 @@ import 'package:clevertap_plugin/clevertap_plugin.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
   runApp(const MyApp());
 }
@@ -14,6 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey, // Assign global key to navigator
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -86,6 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void pushClickedPayloadReceived(Map<String, dynamic> notificationPayload) {
     print("pushClickedPayloadReceived called");
     print("on Push Click Payload = $notificationPayload");
+    showAlert("Alert", "$notificationPayload");
   }
 
   @override
@@ -98,6 +102,26 @@ class _MyHomePageState extends State<MyHomePage> {
   void _init() {
     _fetchCTId();
     _fetchLocationPermissionStatuses();
+  }
+
+  void showAlert(String title, String message) {
+    showDialog(
+      context: navigatorKey.currentContext!, // Use global key's context
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
